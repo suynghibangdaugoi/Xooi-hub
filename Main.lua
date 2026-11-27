@@ -1,16 +1,17 @@
+
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
 
 local hiddenObjects = {}
-local originalGlobalShadows
-local isHidden = false
 
 local function isCharacterOrNPC(obj)
     local current = obj
 
     while current and current ~= Workspace do
-        if current:IsA("Model") and current:FindFirstChildOfClass("Humanoid") then
-            return true
+        if current:IsA("Model") then
+            if current:FindFirstChildOfClass("Humanoid") then
+                return true
+            end
         end
         current = current.Parent
     end
@@ -19,14 +20,6 @@ local function isCharacterOrNPC(obj)
 end
 
 local function hideMap()
-    if isHidden then
-        warn("Map is already hidden")
-        return
-    end
-
-    isHidden = true
-    originalGlobalShadows = Lighting.GlobalShadows
-
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if obj:IsA("BasePart") and not isCharacterOrNPC(obj) then
             hiddenObjects[obj] = {
@@ -46,13 +39,8 @@ local function hideMap()
 end
 
 local function restoreMap()
-    if not isHidden then
-        warn("Map is not hidden")
-        return
-    end
-
     for obj, data in pairs(hiddenObjects) do
-        if obj.Parent then
+        if obj and obj.Parent then
             obj.Transparency = data.Transparency
             obj.CanCollide = data.CanCollide
             obj.CastShadow = data.CastShadow
@@ -60,7 +48,11 @@ local function restoreMap()
     end
 
     table.clear(hiddenObjects)
-    Lighting.GlobalShadows = originalGlobalShadows
-    isHidden = false
     print("Map restored!")
 end
+
+-- Chạy thử:
+hideMap()
+
+-- Muốn khôi phục thì gọi:
+-- restoreMap()
